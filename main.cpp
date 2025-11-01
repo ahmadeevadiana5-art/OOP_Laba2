@@ -51,37 +51,34 @@ public:
     }
 };
 
-// Демонстрация Point
-void demoPoint() {
-    cout << "\n=== ПРОГРАММА 1: БАЗОВЫЙ КЛАСС POINT ===" << endl;
 
-    cout << "\n1. Создание статического объекта:" << endl;
-    Point staticPoint;
-    staticPoint.setName("Static Point");
-    staticPoint.display();
+// ========== КОМПОЗИЦИЯ: КЛАСС LINE ==========
+class Line {
+private:
+    Point start;  // композиция - объект Point
+    Point end;    // композиция - объект Point  
+    string name;
 
-    cout << "\n2. Создание объекта с параметрами:" << endl;
-    Point paramPoint(5, 15, "Parameter Point");
-    paramPoint.display();
+public:
+    // Конструктор с списком инициализации
+    Line(int x1, int y1, int x2, int y2, string lineName)
+        : start(x1, y1, "Start"), end(x2, y2, "End"), name(lineName) {
+        cout << "Line() для " << name << endl;
+    }
 
-    cout << "\n3. Создание копии объекта:" << endl;
-    Point copiedPoint = paramPoint;
-    copiedPoint.setName("Copied Point");
-    copiedPoint.display();
+    ~Line() {
+        cout << "~Line() для " << name << endl;
+    }
 
-    cout << "\n4. Создание динамического объекта:" << endl;
-    Point* dynamicPoint = new Point(100, 200, "Dynamic Point");
-    dynamicPoint->display();
+    void display() const {
+        cout << "Линия '" << name << "':" << endl;
+        cout << "  Начало: "; start.display();
+        cout << "  Конец: "; end.display();
+    }
+};
 
-    cout << "\n5. Работа с методами:" << endl;
-    dynamicPoint->move(50, -25);
-    dynamicPoint->display();
 
-    cout << "\n6. Удаление динамического объекта:" << endl;
-    delete dynamicPoint;
 
-    cout << "\n7. Конец программы" << endl;
-}
 
 // ========== КЛАСС CIRCLE ==========
 class Circle : public Point {
@@ -105,6 +102,20 @@ public:
         cout << "~Circle() для " << name << endl;
     }
 
+    // Метод, демонстрирующий доступ к protected полям предка
+    void demonstrateProtectedAccess() {
+        cout << "Демонстрация protected доступа в Circle:" << endl;
+        cout << "  Можно напрямую обращаться к protected полям:" << endl;
+        cout << "  x = " << x << ", y = " << y << ", name = " << name << endl;
+
+        // Можем изменять protected поля
+        x += 10;
+        y += 10;
+        name += " (modified)";
+        cout << "  После изменения: x = " << x << ", y = " << y << ", name = " << name << endl;
+    }
+
+
     // Переопределение метода display
     void display() const  {
         cout << "Окружность '" << name << "': центр(" << getX() << ", " << getY()
@@ -120,35 +131,65 @@ public:
     double getRadius() const { return radius; }
 };
 
-// Демонстрация наследования
-void demoInheritance() {
-    cout << "\n=== ПРОГРАММА 2: НАСЛЕДОВАНИЕ CIRCLE ОТ POINT ===" << endl;
 
-    cout << "\n1. Создание Circle:" << endl;
-    Circle circle1(10, 20, 5.0, "My Circle");
-    circle1.display();
 
-    cout << "\n2. Вызов переопределенного метода:" << endl;
-    circle1.display();
+// ========== КОМПОЗИЦИЯ С УКАЗАТЕЛЯМИ: КЛАСС POLYLINE ==========
+class Polyline {
+private:
+    vector<Point*> points;  // композиция через указатели
+    string name;
 
-    cout << "\n3. Вызов унаследованного метода move():" << endl;
-    circle1.move(5, -5);
-    circle1.display();
+public:
+    // Конструктор
+    Polyline(string polyName) : name(polyName) {
+        cout << "Polyline() для " << name << endl;
+    }
 
-    cout << "\n4. Создание копии Circle:" << endl;
-    Circle circle2 = circle1;
-    circle2.setName("Copied Circle");
-    circle2.display();
+    // Деструктор - удаляем все точки
+    ~Polyline() {
+        cout << "~Polyline() для " << name << " - удаление " << points.size() << " точек" << endl;
+        for (Point* point : points) {
+            delete point;
+        }
+        points.clear();
+    }
 
-    cout << "\n5. Динамическое создание Circle:" << endl;
-    Circle* dynamicCircle = new Circle(0, 0, 3.0, "Dynamic Circle");
-    dynamicCircle->display();
+    // Добавление точки
+    void addPoint(int x, int y, string pointName) {
+        Point* newPoint = new Point(x, y, pointName);
+        points.push_back(newPoint);
+        cout << "Добавлена точка '" << pointName << "' в Polyline '" << name << "'" << endl;
+    }
 
-    cout << "\n6. Удаление динамического Circle:" << endl;
-    delete dynamicCircle;
+    void display() const {
+        cout << "Ломаная '" << name << "' содержит " << points.size() << " точек:" << endl;
+        for (size_t i = 0; i < points.size(); ++i) {
+            cout << "  Точка " << i + 1 << ": ";
+            points[i]->display();
+        }
+    }
 
-    cout << "\n7. Конец программы" << endl;
-}
+    // Метод для демонстрации разницы между объектом и указателем
+    void demonstratePointerVsObject() {
+        if (points.size() >= 2) {
+            cout << "\n--- Демонстрация разницы объекта и указателя ---" << endl;
+
+            // Создаем копию объекта
+            Point pointCopy = *points[0];
+            pointCopy.setName("Копия объекта");
+            pointCopy.setX(999);
+
+            // Создаем копию указателя
+            Point* pointerCopy = points[0];
+            pointerCopy->setName("Копия указателя");
+
+            cout << "После изменений:" << endl;
+            cout << "Оригинал: "; points[0]->display();
+            cout << "Копия объекта: "; pointCopy.display();
+            cout << "Копия указателя: "; pointerCopy->display();
+        }
+    }
+};
 
 // ========== КЛАССЫ ДЛЯ ПОЛИМОРФИЗМА ==========
 class Shape {
@@ -224,6 +265,118 @@ public:
     }
 };
 
+
+// Демонстрация Point
+void demoPoint() {
+    cout << "\n=== ПРОГРАММА 1: БАЗОВЫЙ КЛАСС POINT ===" << endl;
+
+    cout << "\n1. Создание статического объекта:" << endl;
+    Point staticPoint;
+    staticPoint.setName("Static Point");
+    staticPoint.display();
+
+    cout << "\n2. Создание объекта с параметрами:" << endl;
+    Point paramPoint(5, 15, "Parameter Point");
+    paramPoint.display();
+
+    cout << "\n3. Создание копии объекта:" << endl;
+    Point copiedPoint = paramPoint;
+    copiedPoint.setName("Copied Point");
+    copiedPoint.display();
+
+    cout << "\n4. Создание динамического объекта:" << endl;
+    Point* dynamicPoint = new Point(100, 200, "Dynamic Point");
+    dynamicPoint->display();
+
+    cout << "\n5. Работа с методами:" << endl;
+    dynamicPoint->move(50, -25);
+    dynamicPoint->display();
+
+    cout << "\n6. Удаление динамического объекта:" << endl;
+    delete dynamicPoint;
+
+    cout << "\n7. Копирование указателей:" << endl;
+    Point* original = new Point(1, 2, "Original");
+    Point* copyPtr = original;  // Оба указывают на один объект
+
+    cout << "original: "; original->display();
+    cout << "copyPtr: "; copyPtr->display();
+
+    original->setX(100);  // Меняем через original
+    cout << "После изменения через original:" << endl;
+    cout << "original: "; original->display();
+    cout << "copyPtr: "; copyPtr->display();  // copyPtr тоже видит изменения!
+
+    delete original;
+
+    cout << "\n8. Конец программы" << endl;
+}
+
+// Демонстрация композиции
+void demoComposition() {
+    cout << "\n=== ДЕМОНСТРАЦИЯ КОМПОЗИЦИИ ОБЪЕКТОВ ===" << endl;
+
+    cout << "\n1. Создание Line с композицией Point:" << endl;
+    Line line(0, 0, 10, 10, "My Line");
+    line.display();
+
+    cout << "\n2. Конец функции - автоматическое удаление Line и его компонентов" << endl;
+}
+
+// Демонстрация композиции с указателями и protected доступа
+void demoAdvancedFeatures() {
+    cout << "\n=== ДЕМОНСТРАЦИЯ РАСШИРЕННЫХ ВОЗМОЖНОСТЕЙ ===" << endl;
+
+    cout << "\n1. Композиция с указателями (Polyline):" << endl;
+    Polyline polyline("Моя ломаная");
+    polyline.addPoint(0, 0, "Точка A");
+    polyline.addPoint(10, 10, "Точка B");
+    polyline.addPoint(20, 5, "Точка C");
+    polyline.display();
+
+    cout << "\n2. Демонстрация разницы объект vs указатель:" << endl;
+    polyline.demonstratePointerVsObject();
+
+    cout << "\n3. Демонстрация protected доступа:" << endl;
+    Circle circle(5, 5, 2.0, "Test Circle");
+    circle.demonstrateProtectedAccess();
+
+    cout << "\n4. Автоматическое удаление при выходе из области видимости:" << endl;
+    // Polyline автоматически удалит все свои точки в деструкторе
+}
+
+// Демонстрация наследования
+void demoInheritance() {
+    cout << "\n=== ПРОГРАММА 2: НАСЛЕДОВАНИЕ CIRCLE ОТ POINT ===" << endl;
+
+    cout << "\n1. Создание Circle:" << endl;
+    Circle circle1(10, 20, 5.0, "My Circle");
+    circle1.display();
+
+    cout << "\n2. Вызов переопределенного метода:" << endl;
+    circle1.display();
+
+    cout << "\n3. Вызов унаследованного метода move():" << endl;
+    circle1.move(5, -5);
+    circle1.display();
+
+    cout << "\n4. Создание копии Circle:" << endl;
+    Circle circle2 = circle1;
+    circle2.setName("Copied Circle");
+    circle2.display();
+
+    cout << "\n5. Динамическое создание Circle:" << endl;
+    Circle* dynamicCircle = new Circle(0, 0, 3.0, "Dynamic Circle");
+    dynamicCircle->display();
+
+    cout << "\n6. Удаление динамического Circle:" << endl;
+    delete dynamicCircle;
+
+    cout << "\n7. Конец программы" << endl;
+}
+
+
+
 // Демонстрация полиморфизма
 void demoPolymorphism() {
     cout << "\n=== ПРОГРАММА 3: ПОЛИМОРФИЗМ ===" << endl;
@@ -247,15 +400,31 @@ void demoPolymorphism() {
     delete shape1;
     delete shape2;
     delete shape3;
+
+    cout << "\n5. Сравнение MyBase* obj = new MyDeriv() vs MyBase obj = MyDeriv():" << endl;
+
+    // Правильно - через указатель (работает полиморфизм)
+    Shape* polyShape = new Rectangle("Poly Rect", 0, 0, 4, 3);
+    cout << "Shape* polyShape = new Rectangle(): ";
+    polyShape->display();  // Вызывается Rectangle::display()
+
+    // Проблема - объект напрямую (не работает полиморфизм)
+    Shape slicedShape = Rectangle("Sliced Rect", 0, 0, 4, 3);
+    cout << "Shape slicedShape = Rectangle(): ";
+    slicedShape.display();  // Вызывается Shape::display() - slicing problem!
+
+    delete polyShape;
 }
 
 // ========== MAIN ФУНКЦИЯ ==========
 int main() {
     cout << "=== ЛАБОРАТОРНАЯ РАБОТА 2: ОБЪЕКТЫ И КЛАССЫ ===" << endl;
-    cout << "ВЫБЕРИТЕ ПРОГРАММУ:" << endl;
+    cout << "Выберите программу:" << endl;
     cout << "1 - Базовый класс Point" << endl;
-    cout << "2 - Наследование Circle" << endl;
-    cout << "3 - Полиморфизм" << endl;
+    cout << "2 - Композиция объектов" << endl;
+    cout << "3 - Наследование Circle" << endl;
+    cout << "4 - Полиморфизм" << endl;
+    cout << "5 - Другие, композиция с указателямидав" << endl;
     cout << "Ваш выбор: ";
 
     int choice;
@@ -266,10 +435,16 @@ int main() {
         demoPoint();
         break;
     case 2:
-        demoInheritance();
+        demoComposition();
         break;
     case 3:
+        demoInheritance();
+        break;
+    case 4:
         demoPolymorphism();
+        break;
+    case 5:
+        demoAdvancedFeatures();
         break;
     default:
         cout << "Неверный выбор!" << endl;
