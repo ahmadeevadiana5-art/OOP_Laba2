@@ -1,4 +1,4 @@
-#include <iostream>
+/*#include <iostream>
 #include <string>
 #include <cmath>
 
@@ -136,8 +136,10 @@ void demoInheritance() {
     cout << "\n7. Конец функции demoInheritance()" << endl;
 }
 
-int main() {
+/*
+int main_circle() {
     cout << "=== ПРОГРАММА 2: НАСЛЕДОВАНИЕ ===" << endl;
     demoInheritance();
     return 0;
 }
+*/

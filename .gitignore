@@ -1,15 +1,2 @@
-# Скомпилированные файлы
-*.exe
-*.out
-*.o
-*.obj
-
-# Папки сборки
-build/
-bin/
-
-# Системные файлы
-.DS_Store
-Thumbs.db".vs/" 
-"Debug/" 
-"Release/" 
+".vs/" 
+"OOP_Laba2_final/" 
